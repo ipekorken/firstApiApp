@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
+import {baseUrl} from '../helpers/baseUrl';
 
 const Register = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,6 @@ const Register = ({navigation}) => {
   const [surname, setSurname] = useState('');
 
   function register() {
-    const axios = require('axios');
     let data = JSON.stringify({
       name: name,
       surname: surname,
@@ -26,7 +26,7 @@ const Register = ({navigation}) => {
 
     let config = {
       method: 'post',
-      url: 'http://localhost:3000/api/users/register',
+      url: `${baseUrl}:3000/api/users/register`,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -116,9 +116,9 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     width: 250,
-    height: 50,
+    height: 80,
     justifyContent: 'center',
-    borderWidth: 0.5,
+    borderWidth: 1,
   },
   input: {
     color: 'black',

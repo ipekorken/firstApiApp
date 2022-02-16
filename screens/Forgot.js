@@ -63,9 +63,9 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     width: 250,
-    height: 50,
+    height: 80,
     justifyContent: 'center',
-    borderWidth: 0.5,
+    borderWidth: 1,
   },
   input: {
     color: 'white',

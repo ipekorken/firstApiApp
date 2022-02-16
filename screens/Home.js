@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import axios from 'axios';
+import {baseUrl} from '../helpers/baseUrl';
 
 const Home = ({navigation}) => {
   const [users, setUsers] = useState([]);
@@ -16,18 +17,18 @@ const Home = ({navigation}) => {
     navigation.navigate('Login');
   }
   useEffect(() => {
-    let config = {
+    var config = {
       method: 'get',
-      url: 'http://localhost:3000/api/users',
+      url: `${baseUrl}:3000/api/users`,
       headers: {},
     };
 
     axios(config)
-      .then(response => {
-        //console.log(JSON.stringify(response.data));
+      .then(function (response) {
+        console.log(JSON.stringify(response.data.data));
         setUsers(response.data.data);
       })
-      .catch(error => {
+      .catch(function (error) {
         console.log(error);
       });
   }, []);
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'lightgrey',
     height: 300,
     width: 300,
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderColor: 'grey',
     marginTop: 20,
     marginBottom: 10,

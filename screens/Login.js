@@ -8,13 +8,38 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
+import {baseUrl} from '../helpers/baseUrl';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   function login() {
-    navigation.navigate('Home');
+    var data = JSON.stringify({
+      email: email,
+      password: password,
+    });
+
+    var config = {
+      method: 'post',
+      url: `${baseUrl}:3000/api/users/login`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: data,
+    };
+
+    axios(config)
+      .then(function (response) {
+        console.log(JSON.stringify(response.data));
+        console.log('login success');
+        setTimeout(() => {
+          navigation.navigate('Home');
+        }, 1500);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 
   function goRegister() {
@@ -79,9 +104,9 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     width: 250,
-    height: 50,
+    height: 80,
     justifyContent: 'center',
-    borderWidth: 0.5,
+    borderWidth: 1,
   },
   input: {
     color: 'white',
