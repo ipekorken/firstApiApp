@@ -6,40 +6,66 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
+import {useDispatch} from 'react-redux';
+import {setUser} from '../@redux/app/action';
 import {baseUrl} from '../helpers/baseUrl';
 
 const Login = ({navigation}) => {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  function login() {
-    var data = JSON.stringify({
-      email: email,
-      password: password,
-    });
+  const showAlert = (errTitle, errInfo) => {
+    Alert.alert(errTitle, errInfo, [{text: 'OK'}]);
+  };
 
-    var config = {
-      method: 'post',
-      url: `${baseUrl}:3000/api/users/login`,
-      headers: {
-        'Content-Type': 'application/json',
+  const loginAlert = (errTitle, errInfo) => {
+    Alert.alert(errTitle, errInfo, [
+      {
+        text: 'OK',
+        onPress: () =>
+          setTimeout(() => {
+            navigation.navigate('Home');
+          }, 400),
       },
-      data: data,
-    };
+    ]);
+  };
 
-    axios(config)
-      .then(function (response) {
-        console.log(JSON.stringify(response.data));
-        console.log('login success');
-        setTimeout(() => {
-          navigation.navigate('Home');
-        }, 1500);
-      })
-      .catch(function (error) {
-        console.log(error);
+  function login() {
+    if (email != '' || password != '') {
+      var data = JSON.stringify({
+        email: email,
+        password: password,
       });
+      var config = {
+        method: 'post',
+        url: `${baseUrl}:3000/api/users/login`,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: data,
+      };
+      axios(config)
+        .then(function (response) {
+          //console.log(JSON.stringify(response.data));
+          //console.log(response.data.message);
+          if (response.data.token) {
+            //console.log(response.data);
+            dispatch(setUser(response.data));
+            loginAlert('Login Successful', '');
+          } else {
+            showAlert('Login Failed', response.data.message);
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      showAlert('Login Failed', 'Please fill the blanks!');
+    }
   }
 
   function goRegister() {

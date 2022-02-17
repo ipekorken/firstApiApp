@@ -9,9 +9,11 @@ import {
   ScrollView,
 } from 'react-native';
 import axios from 'axios';
+import {useSelector} from 'react-redux';
 import {baseUrl} from '../helpers/baseUrl';
 
 const Home = ({navigation}) => {
+  const user = useSelector(state => state.app.user);
   const [users, setUsers] = useState([]);
   function logout() {
     navigation.navigate('Login');
@@ -25,7 +27,7 @@ const Home = ({navigation}) => {
 
     axios(config)
       .then(function (response) {
-        console.log(JSON.stringify(response.data.data));
+        //console.log(JSON.stringify(response.data.data));
         setUsers(response.data.data);
       })
       .catch(function (error) {
@@ -41,7 +43,13 @@ const Home = ({navigation}) => {
           {users.map((item, index) => {
             return (
               <View key={index}>
-                <View style={styles.renderView}>
+                <View
+                  style={[
+                    styles.renderView,
+                    user.user.email == item.email
+                      ? {borderColor: 'red'}
+                      : {borderColor: 'black'},
+                  ]}>
                   <Text style={styles.renderTitle}>User {index + 1}</Text>
                   <View style={styles.renderLine}></View>
                   <Text style={styles.renderTxt}>{item.name}</Text>
