@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import {useDispatch} from 'react-redux';
-import {setUser} from '../@redux/app/action';
+import {setUserToken, setUserInfo} from '../@redux/app/action';
 import {baseUrl} from '../helpers/baseUrl';
 
 const Login = ({navigation}) => {
@@ -50,11 +50,9 @@ const Login = ({navigation}) => {
       };
       axios(config)
         .then(function (response) {
-          //console.log(JSON.stringify(response.data));
-          //console.log(response.data.message);
           if (response.data.token) {
-            //console.log(response.data);
-            dispatch(setUser(response.data));
+            dispatch(setUserToken(response.data.token));
+            dispatch(setUserInfo(response.data.user));
             loginAlert('Login Successful', '');
           } else {
             showAlert('Login Failed', response.data.message);

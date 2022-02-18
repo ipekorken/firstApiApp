@@ -3,7 +3,9 @@ import React from 'react';
 import Forgot from '../screens/Forgot';
 import Home from '../screens/Home';
 import Login from '../screens/Login';
+import Profile from '../screens/Profile';
 import Register from '../screens/Register';
+import Update from '../screens/Update';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +30,16 @@ const StackNavigation = () => {
       <Stack.Screen
         name="Home"
         component={Home}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Update"
+        component={Update}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

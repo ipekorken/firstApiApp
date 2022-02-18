@@ -4,76 +4,56 @@ import {
   Text,
   View,
   SafeAreaView,
-  TextInput,
   TouchableOpacity,
-  Alert,
+  TextInput,
 } from 'react-native';
 import axios from 'axios';
+import {useSelector, useDispatch} from 'react-redux';
+import {setUserInfo} from '../@redux/app/action';
 import {baseUrl} from '../helpers/baseUrl';
 
-const Register = ({navigation}) => {
+const Update = ({navigation}) => {
+  const userToken = useSelector(state => state.app.userToken);
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
 
-  const showAlert = (errTitle, errInfo) => {
-    Alert.alert(errTitle, errInfo, [{text: 'OK'}]);
-  };
+  function saveInfo() {
+    var data = JSON.stringify({
+      name: name,
+      surname: surname,
+      email: email,
+      password: password,
+    });
 
-  const registerAlert = (errTitle, errInfo) => {
-    Alert.alert(errTitle, errInfo, [
-      {
-        text: 'OK',
-        onPress: () =>
-          setTimeout(() => {
-            navigation.navigate('Home');
-          }, 400),
+    var config = {
+      method: 'patch',
+      url: `${baseUrl}:3000/api/users/update`,
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        'Content-Type': 'application/json',
       },
-    ]);
-  };
+      data: data,
+    };
 
-  function register() {
-    if (email !== '' || password !== '' || name !== '' || surname !== '') {
-      let data = JSON.stringify({
-        name: name,
-        surname: surname,
-        email: email,
-        password: password,
+    axios(config)
+      .then(function (response) {
+        dispatch(setUserInfo(response.data));
+        backProfile();
+      })
+      .catch(function (error) {
+        console.log(error);
       });
-
-      let config = {
-        method: 'post',
-        url: `${baseUrl}:3000/api/users/register`,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        data: data,
-      };
-
-      axios(config)
-        .then(response => {
-          //console.log(JSON.stringify(response.data));
-          registerAlert('Register Successful', '');
-        })
-        .catch(error => {
-          showAlert('Register Failed', response.data.message);
-          console.log(error);
-        });
-
-      setTimeout(() => {
-        navigation.navigate('Login');
-      }, 500);
-    } else {
-      showAlert('Register Failed', 'Please fill the blanks!');
-    }
   }
 
-  function goLogin() {
-    navigation.navigate('Login');
+  function backProfile() {
+    navigation.navigate('Profile');
   }
+
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.modalScreen}>
       <View style={styles.inputContainer}>
         <View style={styles.inputView}>
           <TextInput
@@ -113,10 +93,10 @@ const Register = ({navigation}) => {
         </View>
       </View>
       <View style={styles.btnContainer}>
-        <TouchableOpacity onPress={register} style={styles.btnTouch}>
-          <Text style={styles.btnTxt}>Register</Text>
+        <TouchableOpacity onPress={saveInfo} style={styles.btnTouch}>
+          <Text style={styles.btnTxt}>Save</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={goLogin} style={styles.btnTouch}>
+        <TouchableOpacity onPress={backProfile} style={styles.btnTouch}>
           <Text style={[styles.btnTxt, {color: 'red'}]}>Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -124,7 +104,7 @@ const Register = ({navigation}) => {
   );
 };
 
-export default Register;
+export default Update;
 
 const styles = StyleSheet.create({
   screen: {
@@ -132,6 +112,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#EBEBEB',
+  },
+  screenTitle: {
+    fontSize: 30,
+  },
+  btnTouch: {
+    marginTop: 10,
+  },
+  btnTxt: {
+    fontSize: 20,
+  },
+  infoContainer: {
+    marginTop: 20,
+    backgroundColor: 'lightgrey',
+    width: 300,
+    borderWidth: 1,
+    borderColor: 'grey',
+    padding: 10,
+    marginBottom: 20,
+  },
+  infoView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoTitle: {
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  info: {
+    fontSize: 16,
+  },
+  pencilIcon: {
+    height: 18,
+    width: 18,
+    marginLeft: 8,
+  },
+  edit: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   inputContainer: {},
   inputView: {
@@ -151,10 +169,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
   },
-  btnTouch: {
-    marginTop: 10,
-  },
-  btnTxt: {
-    fontSize: 20,
+  modalScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EBEBEB',
   },
 });

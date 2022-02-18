@@ -5,18 +5,21 @@ import {
   View,
   SafeAreaView,
   TouchableOpacity,
-  FlatList,
   ScrollView,
 } from 'react-native';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import {setUsers} from '../@redux/app/action';
 import {baseUrl} from '../helpers/baseUrl';
 
 const Home = ({navigation}) => {
-  const user = useSelector(state => state.app.user);
-  const [users, setUsers] = useState([]);
-  function logout() {
-    navigation.navigate('Login');
+  const userInfo = useSelector(state => state.app.userInfo);
+  const users = useSelector(state => state.app.users);
+
+  const dispatch = useDispatch();
+
+  function goProfile() {
+    navigation.navigate('Profile');
   }
   useEffect(() => {
     var config = {
@@ -27,8 +30,7 @@ const Home = ({navigation}) => {
 
     axios(config)
       .then(function (response) {
-        //console.log(JSON.stringify(response.data.data));
-        setUsers(response.data.data);
+        dispatch(setUsers(response.data.data));
       })
       .catch(function (error) {
         console.log(error);
@@ -46,7 +48,7 @@ const Home = ({navigation}) => {
                 <View
                   style={[
                     styles.renderView,
-                    user.user.email == item.email
+                    userInfo.email == item.email
                       ? {borderColor: 'red'}
                       : {borderColor: 'black'},
                   ]}>
@@ -61,8 +63,8 @@ const Home = ({navigation}) => {
           })}
         </ScrollView>
       </View>
-      <TouchableOpacity onPress={logout} style={styles.btnTouch}>
-        <Text style={styles.btnTxt}>Logout</Text>
+      <TouchableOpacity onPress={goProfile} style={styles.btnTouch}>
+        <Text style={styles.btnTxt}>Profile</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
