@@ -27,8 +27,8 @@ const Register = ({navigation}) => {
         text: 'OK',
         onPress: () =>
           setTimeout(() => {
-            navigation.navigate('Home');
-          }, 400),
+            navigation.navigate('Login');
+          }, 500),
       },
     ]);
   };
@@ -54,16 +54,15 @@ const Register = ({navigation}) => {
       axios(config)
         .then(response => {
           //console.log(JSON.stringify(response.data));
-          registerAlert('Register Successful', '');
+          if (response.data.message == undefined) {
+            registerAlert('Register Successful', '');
+          } else {
+            showAlert('Register Failed', response.data.message);
+          }
         })
         .catch(error => {
-          showAlert('Register Failed', response.data.message);
           console.log(error);
         });
-
-      setTimeout(() => {
-        navigation.navigate('Login');
-      }, 500);
     } else {
       showAlert('Register Failed', 'Please fill the blanks!');
     }
