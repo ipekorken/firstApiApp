@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
+  Alert,
+  Image,
 } from 'react-native';
 import axios from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
@@ -13,58 +15,195 @@ import {setUsers} from '../@redux/app/action';
 import {baseUrl} from '../helpers/baseUrl';
 
 const Home = ({navigation}) => {
+  const userToken = useSelector(state => state.app.userToken);
   const userInfo = useSelector(state => state.app.userInfo);
-  const users = useSelector(state => state.app.users);
-
+  const [userList, setUserList] = useState([]);
   const dispatch = useDispatch();
+
+  const showAlert = (errTitle, errInfo) => {
+    Alert.alert(errTitle, errInfo, [{text: 'OK'}]);
+  };
+
+  const deleteAlert = () => {
+    if (userInfo.isAdmin) {
+      Alert.alert(
+        'Tüm kullanıcıları silmek istediğinizden emin misiniz?',
+        'Bu işlem geri alınamaz!',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {text: 'OK', onPress: () => deleteAll()},
+        ],
+      );
+    } else {
+      Alert.alert(
+        '',
+        'Kullanıcı listesini silmek için gerekli yetkiye sahip değilsiniz.',
+        [
+          {
+            text: 'OK',
+          },
+        ],
+      );
+    }
+  };
 
   function goProfile() {
     navigation.navigate('Profile');
   }
-  useEffect(() => {
+
+  function deleteAll() {
+    var config = {
+      method: 'get',
+      url: `${baseUrl}:3000/api/users/deleteAll`,
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    };
+
+    axios(config)
+      .then(function (response) {
+        //console.log(JSON.stringify(response.data));
+        setTimeout(() => {
+          showAlert('', response.data.message);
+          setTimeout(() => {
+            saveUsers();
+          }, 500);
+        }, 1000);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  function saveUsers() {
     var config = {
       method: 'get',
       url: `${baseUrl}:3000/api/users`,
-      headers: {},
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        'Content-Type': 'application/json',
+      },
     };
 
     axios(config)
       .then(function (response) {
         dispatch(setUsers(response.data.data));
+        setUserList(response.data.data);
       })
       .catch(function (error) {
         console.log(error);
       });
+  }
+
+  function deleteOneUser(id, admin) {
+    if (admin == true) {
+      Alert.alert('', 'Başka bir admini silemezsiniz!', [{text: 'OK'}]);
+    } else {
+      Alert.alert(
+        'Bu kullanıcıyı silmek istediğinizden emin misiniz?',
+        'Bu işlem geri alınamaz!',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'OK',
+            onPress: () => {
+              var config = {
+                method: 'delete',
+                url: `${baseUrl}:3000/api/users/${id}`,
+                headers: {
+                  Authorization: `Bearer ${userToken}`,
+                },
+              };
+
+              axios(config)
+                .then(function (response) {
+                  if (id == userInfo._id) {
+                    setTimeout(() => {
+                      showAlert('', response.data.message);
+                      setTimeout(() => {
+                        navigation.navigate('Login');
+                      }, 500);
+                    }, 1000);
+                  } else {
+                    setTimeout(() => {
+                      showAlert('', response.data.message);
+                      setTimeout(() => {
+                        saveUsers();
+                      }, 500);
+                    }, 1000);
+                  }
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+            },
+          },
+        ],
+      );
+    }
+  }
+
+  useEffect(() => {
+    saveUsers();
   }, []);
 
   return (
     <SafeAreaView style={styles.screen}>
-      <Text style={styles.screenTitle}>Home Screen</Text>
+      <Text style={styles.screenTitle}>User List</Text>
       <View style={styles.flatView}>
-        <ScrollView>
-          {users.map((item, index) => {
-            return (
-              <View key={index}>
-                <View
-                  style={[
-                    styles.renderView,
-                    userInfo.email == item.email
-                      ? {borderColor: 'red'}
-                      : {borderColor: 'black'},
-                  ]}>
-                  <Text style={styles.renderTitle}>User {index + 1}</Text>
-                  <View style={styles.renderLine}></View>
-                  <Text style={styles.renderTxt}>{item.name}</Text>
-                  <Text style={styles.renderTxt}>{item.surname}</Text>
-                  <Text style={styles.renderTxt}>{item.email}</Text>
+        {userInfo.isAdmin ? (
+          <ScrollView>
+            {userList?.map((item, index) => {
+              return (
+                <View key={index}>
+                  <View
+                    style={[
+                      styles.renderView,
+                      userInfo.email == item.email
+                        ? {borderColor: 'red'}
+                        : {borderColor: 'black'},
+                    ]}>
+                    <View style={styles.deleteView}>
+                      <Text style={styles.renderTitle}>User {index + 1}</Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          deleteOneUser(item._id, item.isAdmin);
+                        }}>
+                        <Image
+                          style={styles.deleteIcon}
+                          source={require('../assets/delete2.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View style={styles.renderLine}></View>
+                    <Text style={styles.renderTxt}>{item.name}</Text>
+                    <Text style={styles.renderTxt}>{item.surname}</Text>
+                    <Text style={styles.renderTxt}>{item.email}</Text>
+                  </View>
                 </View>
-              </View>
-            );
-          })}
-        </ScrollView>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          <View style={styles.messageView}>
+            <Text style={styles.messageTxt}>
+              Kullanıcı listesini görüntülemek için gerekli yetkiye sahip
+              değilsiniz.
+            </Text>
+          </View>
+        )}
       </View>
       <TouchableOpacity onPress={goProfile} style={styles.btnTouch}>
         <Text style={styles.btnTxt}>Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={deleteAlert} style={styles.btnTouch}>
+        <Text style={styles.btnTxt}>Delete Users</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -92,7 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   btnTouch: {
-    marginTop: 20,
+    marginTop: 10,
   },
   btnTxt: {
     fontSize: 20,
@@ -114,5 +253,23 @@ const styles = StyleSheet.create({
     height: 1,
     marginTop: 3,
     marginBottom: 5,
+  },
+  messageView: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
+  },
+  messageTxt: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  deleteView: {
+    flexDirection: 'row',
+  },
+  deleteIcon: {
+    height: 30,
+    width: 25,
+    marginLeft: 150,
   },
 });

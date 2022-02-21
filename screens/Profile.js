@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
@@ -14,6 +15,7 @@ import {baseUrl} from '../helpers/baseUrl';
 
 const Profile = ({navigation}) => {
   const userInfo = useSelector(state => state.app.userInfo);
+  const userToken = useSelector(state => state.app.userToken);
   const dispatch = useDispatch();
 
   function goHome() {
@@ -36,6 +38,50 @@ const Profile = ({navigation}) => {
   }
   function goUpdate() {
     navigation.navigate('Update');
+  }
+  function deleteAccount() {
+    Alert.alert(
+      'Hesabınızı silmek istediğinizden emin misiniz?',
+      'Bu işlem geri alınamaz!',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            var config = {
+              method: 'delete',
+              url: `${baseUrl}:3000/api/users/deleteOwnAccount`,
+              headers: {
+                Authorization: `Bearer ${userToken}`,
+              },
+            };
+
+            axios(config)
+              .then(function (response) {
+                //console.log(JSON.stringify(response.data));
+                setTimeout(() => {
+                  Alert.alert('', 'Hesabınız silindi.', [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        setTimeout(() => {
+                          navigation.navigate('Login');
+                        }, 1000);
+                      },
+                    },
+                  ]);
+                }, 500);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          },
+        },
+      ],
+    );
   }
   function logout() {
     navigation.navigate('Login');
@@ -64,6 +110,15 @@ const Profile = ({navigation}) => {
           <Image
             style={styles.pencilIcon}
             source={require('../assets/pencil.png')}
+          />
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={deleteAccount} style={styles.btnTouch}>
+        <View style={styles.edit}>
+          <Text style={styles.btnTxt}>Delete Account</Text>
+          <Image
+            style={styles.deleteIcon}
+            source={require('../assets/delete.png')}
           />
         </View>
       </TouchableOpacity>
@@ -119,6 +174,11 @@ const styles = StyleSheet.create({
     height: 18,
     width: 18,
     marginLeft: 8,
+  },
+  deleteIcon: {
+    height: 20,
+    width: 20,
+    marginLeft: 6,
   },
   edit: {
     flexDirection: 'row',
