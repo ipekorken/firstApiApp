@@ -90,7 +90,7 @@ const Home = ({navigation}) => {
 
     axios(config)
       .then(function (response) {
-        dispatch(setUsers(response.data.data));
+        //dispatch(setUsers(response.data));
         setUserList(response.data.data);
       })
       .catch(function (error) {
